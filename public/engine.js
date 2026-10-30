@@ -1,0 +1,4 @@
+export const FEE=.001;
+export function execute(wallet,{side,asset,quantity,price}){if(!['buy','sell'].includes(side)||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(price)||price<=0)throw Error('Harga dan jumlah harus lebih besar dari nol.');const cost=quantity*price;const next={...wallet};if(side==='buy'){if((next.USDT||0)+1e-9<cost*(1+FEE))throw Error('Saldo USDT tidak cukup, termasuk biaya.');next.USDT-=cost*(1+FEE);next[asset]=(next[asset]||0)+quantity;}else{if((next[asset]||0)+1e-12<quantity)throw Error('Saldo aset tidak cukup.');next[asset]-=quantity;next.USDT=(next.USDT||0)+cost*(1-FEE);}return next;}
+export function canFill(order,price){return order.side==='buy'?price<=order.price:price>=order.price;}
+export function reservedWallet(state){const w={...state.wallet};for(const o of state.orders){const a=o.side==='buy'?'USDT':o.asset;w[a]=(w[a]||0)-(o.side==='buy'?o.quantity*o.price*(1+FEE):o.quantity);}return w;}
